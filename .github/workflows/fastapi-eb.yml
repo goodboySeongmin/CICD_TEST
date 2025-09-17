@@ -46,14 +46,17 @@ jobs:
             "Ports": [
               { "ContainerPort": "8000" }
             ],
-            "Command": ["uvicorn","app.main:app","--host","0.0.0.0","--port","8000","--workers","2"],
             "Environment": [
-              { "Name": "PORT", "Value": "8000" }
+              { "Name": "APP_MODULE", "Value": "app:app" },
+              { "Name": "PORT", "Value": "8000" },
+              { "Name": "HOST", "Value": "0.0.0.0" },
+              { "Name": "WORKERS", "Value": "2" }
             ]
           }
           EOF
         env:
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+
 
       - name: Beanstalk Deploy
         uses: einaregilsson/beanstalk-deploy@v21
