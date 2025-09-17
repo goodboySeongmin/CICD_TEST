@@ -42,14 +42,14 @@ jobs:
 
       - name: Verify image tag exists on Docker Hub
         run: |
-          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
           echo "Checking $IMAGE"
           docker buildx imagetools inspect "$IMAGE" >/dev/null
           echo "✅ Image tag exists: $IMAGE"
       
       - name: Inspect manifest (should list amd64 and/or arm64)
         run: |
-          docker buildx imagetools inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+          docker buildx imagetools inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
 
 
       - name: Generate Dockerrun.aws.json
@@ -58,7 +58,7 @@ jobs:
           {
             "AWSEBDockerrunVersion": "1",
             "Image": {
-              "Name": "${DOCKER_IMAGE}",
+              "Name": "${{ secrets.DOCKER_IMAGENAME }}",
               "Update": "true"
             },
             "Ports": [
@@ -73,7 +73,7 @@ jobs:
           }
           EOF
         env:
-          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
 
 
       - name: Beanstalk Deploy
