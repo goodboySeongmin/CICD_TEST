@@ -11,9 +11,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 시크릿 존재 여부 빠르게 점검
+      - name: Validate Docker secrets
+        run: |
+          [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] || { echo "❌ DOCKERHUB_USERNAME is missing"; exit 1; }
+          [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ] || { echo "❌ DOCKERHUB_TOKEN is missing"; exit 1; }
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
+          registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
