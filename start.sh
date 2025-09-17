@@ -6,4 +6,5 @@ PORT="${PORT:-8000}"
 WORKERS="${WORKERS:-2}"
 
 echo "Starting: uvicorn ${APP_MODULE} on ${HOST}:${PORT} (workers=${WORKERS})"
-exec uvicorn "${APP_MODULE}" --host "${HOST}" --port "${PORT}" --workers "${WORKERS}" --proxy-headers
+# exec uvicorn app:app --host 0.0.0.0 --port 8000 --workers "${WORKERS}" --proxy-headers
+exec uvicorn app:app --reload
