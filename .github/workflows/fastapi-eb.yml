@@ -7,15 +7,21 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 시크릿 존재 여부 빠르게 점검
-      - name: Validate Docker secrets
+      # 필수 시크릿 존재 여부 빠르게 확인 (오타/빈값이면 즉시 실패)
+      - name: Validate required secrets
         run: |
-          [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] || { echo "❌ DOCKERHUB_USERNAME is missing"; exit 1; }
-          [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ] || { echo "❌ DOCKERHUB_TOKEN is missing"; exit 1; }
+          [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] || { echo "❌ DOCKERHUB_USERNAME missing"; exit 1; }
+          [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ] || { echo "❌ DOCKERHUB_TOKEN missing"; exit 1; }
+          [ -n "${{ secrets.DOCKER_IMAGENAME }}" ] || { echo "❌ DOCKER_IMAGENAME missing"; exit 1; }
+          [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || { echo "❌ AWS_ACCESS_KEY_ID missing"; exit 1; }
+          [ -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ] || { echo "❌ AWS_SECRET_ACCESS_KEY missing"; exit 1; }
+          [ -n "${{ secrets.AWS_EB_APPLICATION_NAME }}" ] || { echo "❌ AWS_EB_APPLICATION_NAME missing"; exit 1; }
+          [ -n "${{ secrets.AWS_EB_ENVIRONMENT_NAME }}" ] || { echo "❌ AWS_EB_ENVIRONMENT_NAME missing"; exit 1; }
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -24,46 +30,50 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 멀티아키텍처(amd64/arm64) 이미지 빌드를 위한 설정
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
 
-
+      # 이미지 빌드 & 푸시 (amd64, arm64 동시)
       - name: Build & Push Image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
 
+      # 태그가 실제로 Docker Hub에 존재하는지 확인
       - name: Verify image tag exists on Docker Hub
         run: |
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
           echo "Checking $IMAGE"
           docker buildx imagetools inspect "$IMAGE" >/dev/null
-          echo "✅ Image tag exists: $IMAGE"
-      
-      - name: Inspect manifest (should list amd64 and/or arm64)
+          echo "✅ Tag exists on Docker Hub"
+
+      # EB처럼 비로그인 상태에서 pull 가능한지(=Public & 레이트리밋 아님) 간단 검증
+      - name: Public pull simulation (EB-like)
         run: |
-          docker buildx imagetools inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+          docker logout
+          IMAGE=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+          echo "Pulling without auth: $IMAGE"
+          docker pull "$IMAGE" >/dev/null
+          echo "✅ Public pull ok (image visible without auth)"
 
-
+      # EB가 참고할 Dockerrun 생성 (Command는 start.sh가 처리, 환경변수만 전달)
       - name: Generate Dockerrun.aws.json
         run: |
           cat > Dockerrun.aws.json << 'EOF'
           {
             "AWSEBDockerrunVersion": "1",
-            "Image": {
-              "Name": "${DOCKER_IMAGENAME}",
-              "Update": "true"
-            },
-            "Ports": [
-              { "ContainerPort": "8000" }
-            ],
+            "Image": { "Name": "${DOCKER_IMAGE}", "Update": "true" },
+            "Ports": [ { "ContainerPort": 8000 } ],
             "Environment": [
               { "Name": "APP_MODULE", "Value": "app:app" },
               { "Name": "PORT", "Value": "8000" },
@@ -75,7 +85,11 @@ jobs:
         env:
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
 
+      # 사람이 눈으로 한번 더 확인할 수 있게 출력
+      - name: Show Dockerrun
+        run: cat Dockerrun.aws.json
 
+      # Elastic Beanstalk 배포 (라벨은 run_id로 항상 유니크, 중복 시 기존 버전 재사용)
       - name: Beanstalk Deploy
         uses: einaregilsson/beanstalk-deploy@v21
         with:
@@ -84,9 +98,6 @@ jobs:
           application_name: ${{ secrets.AWS_EB_APPLICATION_NAME }}
           environment_name: ${{ secrets.AWS_EB_ENVIRONMENT_NAME }}
           region: ap-northeast-2
-          # 매 실행마다 고유해지는 라벨 (commit+run)
           version_label: "app-${{ github.sha }}-${{ github.run_id }}"
-          # 같은 라벨이 이미 있으면 그 버전을 재사용
           use_existing_version_if_available: true
           deployment_package: Dockerrun.aws.json
-
