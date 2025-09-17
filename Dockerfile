@@ -14,4 +14,4 @@ COPY . .
 RUN sed -i 's/\r$//' /app/start.sh && chmod +x /app/start.sh
 
 EXPOSE 8000
-CMD ["./start.sh"]
+CMD ["uvicorn","app:app","--host","0.0.0.0","--port","8000","--workers","2"]
