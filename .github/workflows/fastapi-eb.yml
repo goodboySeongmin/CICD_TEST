@@ -69,7 +69,7 @@ jobs:
       # EB가 참고할 Dockerrun 생성 (Command는 start.sh가 처리, 환경변수만 전달)
       - name: Generate Dockerrun.aws.json
         run: |
-          cat > Dockerrun.aws.json << 'EOF'
+          cat > Dockerrun.aws.json << EOF
           {
             "AWSEBDockerrunVersion": "1",
             "Image": { "Name": "${DOCKER_IMAGE}", "Update": "true" },
