@@ -1,0 +1,187 @@
+.delivery-scene {
+  position: relative;
+  width: 300px;
+  height: 100px;
+  margin: 10px 0;
+}
+
+/* 배송 농부 */
+.delivery-farmer {
+  position: absolute;
+  left: 10px;
+  bottom: 35px;
+  width: 25px;
+  height: 35px;
+  opacity: 0;
+  animation: farmer-appear 1s ease-out 0s forwards;
+}
+
+/* 배송 받을 사람과 집 */
+.house-person {
+  position: absolute;
+  right: 10px;
+  bottom: 20px;
+  opacity: 0;
+  animation: house-appear 1s ease-out 1s forwards;
+}
+
+.house {
+  width: 40px;
+  height: 30px;
+  background: #8D6E63;
+  position: relative;
+  border-radius: 3px;
+}
+
+.house::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: -5px;
+  right: -5px;
+  height: 0;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+  border-bottom: 18px solid #D32F2F;
+}
+
+.house-door {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 15px;
+  background: #5D4037;
+  border-radius: 2px 2px 0 0;
+}
+
+.person {
+  position: absolute;
+  right: -15px;
+  bottom: 0;
+  width: 12px;
+  height: 20px;
+}
+
+.person-head {
+  width: 8px;
+  height: 8px;
+  background: #FFE0BD;
+  border-radius: 50%;
+  margin: 0 auto 2px;
+}
+
+.person-body {
+  width: 8px;
+  height: 10px;
+  background: #2196F3;
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+/* 배송될 당근 */
+.delivery-carrot {
+  position: absolute;
+  bottom: 50px;
+  left: 35px;
+  opacity: 0;
+  animation: carrot-delivery 3s ease-in-out 2s forwards;
+}
+
+.delivery-carrot .carrot-body {
+  width: 18px;
+  height: 23px;
+  background: linear-gradient(to bottom, #FF9800, #FF5722);
+  border-radius: 60% 60% 100% 100% / 40% 40% 80% 80%;
+  position: relative;
+  margin: 0 auto;
+}
+
+.delivery-carrot .carrot-leaves {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1px;
+}
+
+.delivery-carrot .carrot-leaf {
+  width: 3px;
+  height: 12px;
+  background: #4CAF50;
+  border-radius: 50% 50% 0 0;
+  transform-origin: bottom;
+}
+
+.delivery-carrot .carrot-leaf:nth-child(1) { transform: rotate(-10deg); }
+.delivery-carrot .carrot-leaf:nth-child(2) { transform: rotate(0deg); }
+.delivery-carrot .carrot-leaf:nth-child(3) { transform: rotate(10deg); }
+
+/* 배송 경로 점선 */
+.delivery-path {
+  position: absolute;
+  top: 50%;
+  left: 50px;
+  right: 70px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    #4CAF50 0px,
+    #4CAF50 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  opacity: 0;
+  animation: path-appear 1s ease-out 1.5s forwards;
+}
+
+/* 애니메이션 정의 */
+@keyframes farmer-appear {
+  0% { opacity: 0; transform: translateX(-10px) scale(0.8); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes house-appear {
+  0% { opacity: 0; transform: translateX(10px) scale(0.8); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes path-appear {
+  0% { opacity: 0; transform: scaleX(0); }
+  100% { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes carrot-delivery {
+  0% { 
+    opacity: 1; 
+    left: 35px;
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    left: 80px;
+    transform: scale(1) rotate(15deg);
+  }
+  40% {
+    opacity: 1;
+    left: 120px;
+    transform: scale(1) rotate(30deg);
+  }
+  60% {
+    opacity: 1;
+    left: 160px;
+    transform: scale(1) rotate(45deg);
+  }
+  80% {
+    opacity: 1;
+    left: 200px;
+    transform: scale(1) rotate(60deg);
+  }
+  100% { 
+    opacity: 0; 
+    left: 240px;
+    transform: scale(1) rotate(90deg);
+  }
+}

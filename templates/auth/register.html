@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입 - Qook 신선마트</title>
+
+  <!-- 라이브러리 -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <!-- 분리된 커스텀 CSS (Tailwind보다 뒤에) -->
+  <link href="/static/css/typography.css" rel="stylesheet">
+  <link href="/static/css/register.css" rel="stylesheet">
+
+  <!-- 다음 주소 검색 -->
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body class="auth-gradient min-h-screen py-8 px-4">
+  <div class="max-w-2xl mx-auto">
+  <!-- 로고 섹션 -->
+    <div class="text-center mb-8">
+      <!-- 레이아웃 영향 없이 로고만 아래로: transform + translate-y -->
+      <a href="/" aria-label="랜딩 페이지로 이동">
+        <img
+          src="{{ url_for('static', path='/images/qook_logo_transparent_white.png') }}"
+          alt="Qook 로고"
+          class="mx-auto object-contain h-20 md:h-24 transform translate-y-3 md:translate-y-4 hover:opacity-90 transition"
+          loading="lazy"
+        />
+      </a>
+      <h1 class="text-3xl font-bold text-white mb-2">Qook 신선마트</h1>
+      <p class="text-green-100">신선한 식재료를 위한 스마트한 선택</p>
+    </div>
+
+    <!-- 진행 단계 표시 -->
+    <div class="flex justify-center mb-8">
+      <div class="flex items-center space-x-4">
+        <div class="step-indicator active flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 text-gray-600 text-sm font-bold" id="step1">
+          1
+        </div>
+        <div class="w-12 h-1 bg-gray-300 rounded" id="progress1"></div>
+        <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 text-gray-600 text-sm font-bold" id="step2">
+          2
+        </div>
+        <div class="w-12 h-1 bg-gray-300 rounded" id="progress2"></div>
+        <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 text-gray-600 text-sm font-bold" id="step3">
+          3
+        </div>
+      </div>
+    </div>
+
+    <!-- 회원가입 카드 -->
+    <div class="auth-card bg-white bg-opacity-95 rounded-2xl p-8">
+      <!-- 단일 폼: 모든 스텝을 이 폼이 감쌈 -->
+      <form id="registerForm" novalidate>
+        <!-- 단계 1: 기본 정보 -->
+        <div id="step1Panel" class="step-panel">
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">기본 정보</h2>
+            <p class="text-gray-600 mt-2">계정 생성을 위한 기본 정보를 입력해주세요</p>
+          </div>
+
+          <div class="space-y-6">
+            <!-- 이름 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-user mr-2"></i>이름 <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+                placeholder="홍길동">
+            </div>
+
+            <!-- 이메일 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-envelope mr-2"></i>이메일 <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                autocomplete="email"
+                class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+                placeholder="example@email.com">
+              <div id="emailCheck" class="hidden mt-1 text-sm">
+                <span id="emailCheckText"></span>
+              </div>
+            </div>
+
+            <!-- 비밀번호 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-lock mr-2"></i>비밀번호 <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200 pr-12"
+                  placeholder="8자 이상, 영문+숫자 조합">
+                <button type="button" id="togglePassword1" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div id="passwordStrength" class="mt-2 text-sm text-gray-500">
+                <div class="flex items-center space-x-2">
+                  <div class="flex space-x-1">
+                    <div class="password-strength-bar w-8 h-1 bg-gray-200 rounded"></div>
+                    <div class="password-strength-bar w-8 h-1 bg-gray-200 rounded"></div>
+                    <div class="password-strength-bar w-8 h-1 bg-gray-200 rounded"></div>
+                    <div class="password-strength-bar w-8 h-1 bg-gray-200 rounded"></div>
+                  </div>
+                  <span id="passwordStrengthText">비밀번호 강도</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 비밀번호 확인 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-lock mr-2"></i>비밀번호 확인 <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <input
+                  type="password"
+                  id="passwordConfirm"
+                  name="password_confirm"
+                  required
+                  class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200 pr-12"
+                  placeholder="비밀번호를 다시 입력하세요">
+                <button type="button" id="togglePassword2" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div id="passwordMatch" class="hidden mt-1 text-sm">
+                <span id="passwordMatchText"></span>
+              </div>
+            </div>
+
+            <!-- 휴대폰 번호 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-phone mr-2"></i>휴대폰 번호
+              </label>
+              <input
+                type="tel"
+                id="phoneNum"
+                name="phone_num"
+                class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+                placeholder="010-1234-5678">
+            </div>
+
+            <button type="button" id="nextStep1" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-200 font-medium flex items-center justify-center">
+              다음 단계 <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 단계 2: 상세 정보 -->
+        <div id="step2Panel" class="step-panel hidden">
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">상세 정보</h2>
+            <p class="text-gray-600 mt-2">맞춤형 서비스를 위한 추가 정보를 입력해주세요</p>
+          </div>
+
+          <div class="space-y-6">
+            <!-- 생년월일 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-calendar mr-2"></i>생년월일
+              </label>
+              <input
+                type="date"
+                id="birthDate"
+                name="birth_date"
+                class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200">
+            </div>
+
+            <!-- 성별 및 나이 -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-venus-mars mr-2"></i>성별
+                </label>
+                <select id="gender" name="gender" class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200">
+                  <option value="">선택해주세요</option>
+                  <option value="M">남성</option>
+                  <option value="F">여성</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-hashtag mr-2"></i>나이
+                </label>
+                <input
+                  type="number"
+                  id="age"
+                  name="age"
+                  min="1"
+                  max="120"
+                  class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+                  placeholder="예: 30">
+              </div>
+            </div>
+
+            <!-- 가구 구성원 수 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-home mr-2"></i>가구 구성원 수
+              </label>
+              <select id="houseHold" name="household" class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200">
+                <option value="1">1명 (1인 가구)</option>
+                <option value="2">2명</option>
+                <option value="3">3명</option>
+                <option value="4">4명</option>
+                <option value="5">5명 이상</option>
+              </select>
+            </div>
+
+            <!-- 알레르기 정보 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-exclamation-triangle mr-2"></i>알레르기 정보
+              </label>
+              <input
+                type="text"
+                id="allergy"
+                name="allergy"
+                class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+                placeholder="예: 견과류, 갑각류, 유제품">
+              <p class="mt-1 text-sm text-gray-500">여러 개인 경우 쉼표(,)로 구분해주세요</p>
+            </div>
+
+            <!-- 비건 여부 -->
+            <div>
+              <label class="flex items-center">
+                <input type="checkbox" id="vegan" name="vegan" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                <span class="ml-2 text-sm font-medium text-gray-700">
+                  <i class="fas fa-leaf mr-2 text-green-500"></i>비건 (채식주의자)
+                </span>
+              </label>
+            </div>
+
+            <!-- 선호하지 않는 음식 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-times-circle mr-2"></i>선호하지 않는 음식
+              </label>
+              <input
+                type="text"
+                id="unfavorite"
+                name="unfavorite"
+                class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+                placeholder="예: 매운음식, 생선, 버섯">
+            </div>
+
+            <div class="flex space-x-4">
+              <button type="button" id="prevStep2" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition duration-200 font-medium flex items-center justify-center">
+                <i class="fas fa-arrow-left mr-2"></i>이전
+              </button>
+              <button type="button" id="nextStep2" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-200 font-medium flex items-center justify-center">
+                다음 단계 <i class="fas fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 단계 3: 주소 정보 및 완료 -->
+        <div id="step3Panel" class="step-panel hidden">
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">주소 정보</h2>
+            <p class="text-gray-600 mt-2">배송을 위한 주소 정보를 입력해주세요</p>
+          </div>
+
+          <div class="space-y-6">
+            <!-- 주소 검색 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-map-marker-alt mr-2"></i>주소
+              </label>
+              <div class="flex space-x-2">
+                <input
+                  type="text"
+                  id="postNum"
+                  name="post_num"
+                  readonly
+                  class="w-32 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
+                  placeholder="우편번호">
+                <button
+                  type="button"
+                  id="searchAddress"
+                  class="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200">
+                  주소 검색
+                </button>
+              </div>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                readonly
+                class="w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50"
+                placeholder="주소를 검색해주세요">
+              <input
+                type="text"
+                id="detailAddress"
+                name="detail_address"
+                class="input-focus w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+                placeholder="상세 주소 (선택사항)">
+            </div>
+
+            <!-- 이용약관 동의 -->
+            <div class="border border-gray-200 rounded-lg p-4">
+              <h3 class="font-medium text-gray-900 mb-3">이용약관 동의</h3>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="checkbox" id="agreeAll" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                  <span class="ml-2 text-sm font-medium text-gray-700">전체 동의</span>
+                </label>
+                <hr class="my-2">
+                <label class="flex items-center">
+                  <input type="checkbox" id="agreeTerms" name="agree_terms" required class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                  <span class="ml-2 text-sm text-gray-700">[필수] 이용약관 동의</span>
+                  <a href="#" class="ml-auto text-xs text-green-600 hover:underline">보기</a>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" id="agreePrivacy" name="agree_privacy" required class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                  <span class="ml-2 text-sm text-gray-700">[필수] 개인정보 처리방침 동의</span>
+                  <a href="#" class="ml-auto text-xs text-green-600 hover:underline">보기</a>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" id="agreeMarketing" name="agree_marketing" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                  <span class="ml-2 text-sm text-gray-700">[선택] 마케팅 정보 수신 동의</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex space-x-4">
+              <button type="button" id="prevStep3" class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition duration-200 font-medium flex items-center justify-center">
+                <i class="fas fa-arrow-left mr-2"></i>이전
+              </button>
+              <button
+                type="submit"
+                id="submitRegister"
+                class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-200 font-medium flex items-center justify-center">
+                <span id="registerButtonText">회원가입 완료</span>
+                <div id="registerSpinner" class="hidden ml-2">
+                  <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- 메시지 영역 -->
+    <div id="messageArea" class="mt-6">
+      <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+        <i class="fas fa-exclamation-circle mr-2"></i>
+        <span id="errorText"></span>
+      </div>
+
+      <div id="successMessage" class="hidden bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="successText"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 로그인 링크 -->
+  <div class="text-center mt-8">
+    <p class="text-green-100">
+      이미 계정이 있으신가요?
+      <a href="/login" class="text-white hover:text-green-200 font-medium transition underline">로그인</a>
+    </p>
+  </div>
+
+  <!-- 성공 후 이동 경로 주입 + 스크립트 -->
+  <script>window.LOGIN_PAGE_URL = "/login/";</script>
+  <script src="/static/js/register.js"></script>
+</body>
+</html>

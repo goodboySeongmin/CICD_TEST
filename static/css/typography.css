@@ -1,0 +1,24 @@
+/* Global typography: unify fonts across all pages */
+
+:root {
+  /* Same stack used by chat/mypage */
+  --qook-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+}
+
+/* Apply to root and Tailwind's font-sans */
+html, body, .font-sans {
+  font-family: var(--qook-font) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure form controls inherit the unified font */
+button, input, select, textarea {
+  font-family: inherit !important;
+}
+
+/* Optional: make placeholders consistent */
+::placeholder {
+  font-family: inherit;
+}
+

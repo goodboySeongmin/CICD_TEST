@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qook 챗봇 - Qook</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/typography.css" rel="stylesheet">
+    <link href="/static/css/chat.css" rel="stylesheet">
+    <link href="/static/css/navigation.css" rel="stylesheet">
+    <!-- hjs 수정: 마이페이지 탭 통합을 위해 mypage.css 추가 -->
+    <link href="/static/css/mypage.css" rel="stylesheet">
+    <!-- hjs 수정: 안전한 사용자 ID 전달용 메타 -->
+    <meta name="current-user-id" content="{{ current_user if current_user else '' }}">
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 헤더 -->
+    <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-2 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+        
+        <!-- 왼쪽: 로고 -->
+        <div class="flex items-center">
+            <a href="/" class="flex items-center">
+            <img src="{{ url_for('static', path='/images/qook_logo.png') }}" alt="Qook 로고" class="h-16 w-auto" loading="lazy">
+            </a>
+        </div>
+        
+        <!-- 중앙: 챗봇 / 마이페이지 버튼 -->
+        <div class="flex items-center space-x-2">
+            <button id="navChatbot" onclick="switchTopTab('chatbot')" class="nav-btn active px-4 py-2 bg-green-600 text-white rounded-lg font-medium transition duration-300 hover:bg-green-700">
+            <i class="fas fa-robot mr-2"></i>챗봇
+            </button>
+            <button id="navMypage" onclick="switchTopTab('mypage')" class="nav-btn px-4 py-2 bg-white text-green-600 rounded-lg font-medium transition duration-300 hover:bg-gray-50">
+            <i class="fas fa-user mr-2"></i>마이페이지
+            </button>
+        </div>
+
+        <!-- 오른쪽: 로그아웃 -->
+        <div>
+            <button onclick="logout()" class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium">
+            로그아웃
+            </button>
+        </div>
+        </div>
+    </div>
+    </header>
+
+    <!-- 메인 컨텐츠: 3컬럼 레이아웃 -->
+    <div class="min-h-screen bg-gray-50">
+        <div class="max-w-full mx-auto">
+            <div id="chat-view" class="chat-layout flex">
+                <!-- 좌측: 레시피/즐겨찾기 패널 -->
+                <div class="left-panel">
+                    <!-- 탭 버튼 -->
+                    <div class="panel-tabs">
+                        <button id="recipeTab" class="tab-btn active" data-tab="recipes">
+                            <i class="fas fa-utensils mr-2"></i>레시피
+                        </button>
+                        <button id="favoriteTab" class="tab-btn" data-tab="favorites">
+                            <i class="fas fa-star mr-2"></i>즐겨찾기
+                        </button>
+                    </div>
+
+                    <!-- 레시피 섹션 -->
+                    <div id="recipesSection" class="panel-content active">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                            <i class="fas fa-utensils mr-2 text-green-500"></i>레시피
+                        </h3>
+                        <div id="recipesList">
+                            <!-- 레시피 카드들이 동적으로 렌더링됩니다 -->
+                            <div class="empty-state">
+                                <i class="fas fa-utensils text-gray-300 text-4xl mb-4"></i>
+                                <p class="text-gray-500">레시피를 검색해보세요</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 즐겨찾기 섹션 -->
+                    <div id="favoritesSection" class="panel-content">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                            <i class="fas fa-star mr-2 text-green-500"></i>즐겨찾기
+                        </h3>
+                        <div class="empty-state">
+                            <i class="fas fa-star text-gray-300 text-4xl mb-4"></i>
+                            <p class="text-gray-500">저장된 레시피가 없습니다</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 중앙: 챗봇 영역 -->
+                <div class="center-panel">
+                    <div class="chat-container" id="chatContainer">
+                        <!-- 사용자 이름 -->
+                        <div class="chat-header">
+                            <h2 class="text-2xl font-bold text-gray-800">{{ name }} 님 <span id="membershipBadge" class="align-middle ml-2 text-xs"></span></h2>
+                            <div class="flex items-center space-x-4 mt-2">
+                                <div id="sessionInfo" class="text-xs text-gray-500"></div>
+                                <button id="clearChat" class="text-xs text-red-500 hover:underline">
+                                    <i class="fas fa-trash mr-1"></i>채팅 지우기
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 채팅창 -->
+                        <div class="chat-messages" id="messages">
+                            <!-- 초기 봇 메시지 -->
+                            <div class="mb-4 message-animation">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <i class="fas fa-robot text-green-600 text-sm"></i>
+                                    </div>
+                                    <div class="message-bubble-bot">
+                                        안녕하세요! Qook 챗봇입니다. 어떤 레시피를 찾고 계신가요?
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- 빠른 액션 버튼들 -->
+                        <div class="quick-actions px-5 py-2 border-t border-gray-100">
+                            <div class="flex flex-wrap gap-2">
+                                <button class="quick-action px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs hover:bg-green-200 transition" data-message="인기 상품 추천해줘">
+                                    🔥 인기 상품
+                                </button>
+                                <button class="quick-action px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs hover:bg-yellow-200 transition" data-message="오늘 저녁 메뉴 추천해줘">
+                                    🍽️ 저녁 메뉴
+                                </button>
+                                <button class="quick-action px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs hover:bg-blue-200 transition" data-message="장바구니 보여주세요">
+                                    🛒 장바구니
+                                </button>
+                                <button class="quick-action px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs hover:bg-purple-200 transition" data-message="유기농 야채 추천해줘">
+                                    🥬 유기농
+                                </button>
+                                <button id="vision-quick-btn" class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs hover:bg-orange-200 transition" title="음식 사진으로 레시피 찾기" onclick="triggerImageUpload(); return false;">
+                                    📷 사진 레시피
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 입력창 -->
+                        <form id="chatForm" class="chat-input">
+                            <button type="button" class="input-btn" title="상담사 연결">
+                                <i class="fas fa-headset"></i>
+                            </button>
+                            <input type="text" id="messageInput" placeholder="메시지를 입력하세요..." class="message-input">
+                            <div class="input-buttons">
+                                <button type="button" id="voiceCancel" class="input-btn hidden" title="음성 취소">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <button type="button" id="voiceInput" class="input-btn" title="음성 입력">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button type="submit" class="input-btn primary" title="전송">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- 숨겨진 파일 입력 -->
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- 우측: 상품/장바구니 패널 -->
+                <div class="right-panel">
+                    <!-- 탭 버튼 -->
+                    <div class="panel-tabs">
+                        <button id="productTab" class="tab-btn active" data-tab="products">
+                            <i class="fas fa-shopping-bag mr-2"></i>상품
+                        </button>
+                        <button id="cartTab" class="tab-btn" data-tab="cart">
+                            <i class="fas fa-shopping-cart mr-2"></i>장바구니
+                        </button>
+                    </div>
+
+                    <!-- 상품 섹션 -->
+                    <div id="productsSection" class="panel-content active hidden">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                            <i class="fas fa-shopping-bag mr-2 text-green-500"></i>추천 상품
+                        </h3>
+                        <div id="productsList">
+                            <!-- 상품 카드들이 동적으로 렌더링됩니다 -->
+                            <div class="empty-state">
+                                <i class="fas fa-shopping-bag text-gray-300 text-4xl mb-4"></i>
+                                <p class="text-gray-500">상품을 검색해보세요</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 장바구니 섹션 -->
+                    <div id="cartSection" class="panel-content">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                            <i class="fas fa-shopping-cart mr-2 text-green-500"></i>장바구니
+                            <span id="cartCount" class="ml-2 px-2 py-1 bg-green-100 text-green-600 rounded-full text-sm">0</span>
+                        </h3>
+                        <!-- hjs 수정: 장바구니 선택 툴바(전체 선택/해제, 선택 삭제) -->
+                        <div class="flex items-center gap-2 mb-2">
+                            <button id="cartSelectAll" class="px-2 py-1 text-xs border rounded hover:bg-gray-50">전체 선택</button>
+                            <button id="cartSelectNone" class="px-2 py-1 text-xs border rounded hover:bg-gray-50">전체 해제</button>
+                        </div>
+                        <div id="cartItems">
+                            <!-- 장바구니 아이템들이 동적으로 렌더링됩니다 -->
+                            <div class="cart-empty p-4 text-center text-gray-500">
+                                장바구니가 비어있습니다.
+                            </div>
+                        </div>
+
+                        <div class="cart-summary mt-4 pt-4 border-t border-gray-200">
+                            <div class="summary-row">
+                                <span>상품금액</span>
+                                <span id="subtotalAmount">0원</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>할인금액</span>
+                                <span id="discountAmount" class="text-red-500">- 0원</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>배송비</span>
+                                <span id="shippingFee" class="text-purple-500">3,000원</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>총 결제금액</span>
+                                <span id="totalAmount">0원</span>
+                            </div>
+                            <button id="checkoutButton" class="checkout-btn hidden">결제하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- hjs 수정: 상위 탭 컨테이너 - 마이페이지 뷰 (초기 hidden) -->
+            <div id="mypage-view" class="hidden">
+                <div class="flex">
+                    <!-- 왼쪽 사이드바 -->
+                    <div class="w-80 bg-green-500 min-h-screen flex-shrink-0">
+                        <div class="p-8">
+                            <!-- 사용자 정보 섹션 -->
+                            <div class="text-center mb-8">
+                                <div class="w-24 h-24 bg-gray-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-3xl"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-white mb-4"><span class="sidebar-user-name">사용자</span> 님</h2>
+                                <button class="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition duration-200" onclick="editProfile()">
+                                    회원정보 수정
+                                </button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200" data-menu="orders" onclick="showContent('orders')">
+                                    <i class="fas fa-clock text-lg mr-4"></i>
+                                    <span class="font-medium">주문내역 확인</span>
+                                </div>
+                                <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200" data-menu="delivery" onclick="showContent('delivery')">
+                                    <i class="fas fa-truck text-lg mr-4"></i>
+                                    <span class="font-medium">배송내역 확인</span>
+                                </div>
+                                <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200" data-menu="chat" onclick="showContent('chat')">
+                                    <i class="fas fa-comments text-lg mr-4"></i>
+                                    <span class="font-medium">채팅 히스토리</span>
+                                </div>
+                                <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200" data-menu="recipes" onclick="showContent('recipes')">
+                                    <i class="fas fa-utensils text-lg mr-4"></i>
+                                    <span class="font-medium">저장한 레시피</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 콘텐츠 영역 -->
+                    <div class="flex-1 p-8">
+                        <div id="content-orders" class="content-section active">
+                            <div class="mb-6">
+                                <h2 class="text-3xl font-bold text-gray-800 mb-2">주문 내역</h2>
+                                <p class="text-gray-600">최근 주문을 확인하세요.</p>
+                            </div>
+                            <div id="ordersList" class="space-y-4"></div>
+                        </div>
+                        <div id="content-delivery" class="content-section hidden">
+                            <div class="mb-6">
+                                <h2 class="text-3xl font-bold text-gray-800 mb-2">배송 내역</h2>
+                                <p class="text-gray-600">배송 상태를 확인하세요.</p>
+                            </div>
+                            <div id="deliveryList" class="space-y-4"></div>
+                        </div>
+                        <div id="content-chat" class="content-section hidden">
+                            <div class="mb-6">
+                                <h2 class="text-3xl font-bold text-gray-800 mb-2">채팅 히스토리</h2>
+                                <p class="text-gray-600">AI 챗봇과의 대화 내역을 확인하세요.</p>
+                            </div>
+                            <div id="chatHistory" class="space-y-4"></div>
+                        </div>
+                        <div id="content-recipes" class="content-section hidden">
+                            <div class="mb-6">
+                                <h2 class="text-3xl font-bold text-gray-800 mb-2">저장한 레시피</h2>
+                                <p class="text-gray-600">즐겨찾기한 레시피 목록입니다.</p>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                        </div>
+                        <div id="content-profile" class="content-section hidden p-8">
+                            <div class="mb-6">
+                                <h2 class="text-3xl font-bold text-gray-800 mb-2">개인정보 수정</h2>
+                                <p class="text-gray-600">회원님의 개인정보를 수정하세요.</p>
+                            </div>
+
+                            <form id="profileForm" class="space-y-6">
+                                <!-- 기본 정보 섹션 -->
+                                <div class="bg-gray-50 rounded-lg p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                        <i class="fas fa-id-card text-blue-500 mr-2"></i>
+                                        기본 정보
+                                    </h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">회원 아이디</label>
+                                            <input type="text" id="profileUserId" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-500" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
+                                            <input type="text" id="profileName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">이메일 *</label>
+                                            <input type="email" id="profileEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
+                                            <input type="tel" id="profilePhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="010-0000-0000">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">생년월일</label>
+                                            <input type="date" id="profileBirthDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">나이</label>
+                                            <input type="number" id="profileAge" min="1" max="150" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">주소</label>
+                                        <input type="text" id="profileAddress" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">우편번호</label>
+                                        <input type="text" id="profilePostNum" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" maxlength="10">
+                                    </div>
+                                </div>
+
+                                <!-- 추가 정보 섹션 -->
+                                <div class="bg-green-50 rounded-lg p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                        <i class="fas fa-leaf text-green-500 mr-2"></i>
+                                        식품 선호도 정보
+                                    </h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
+                                            <div class="flex space-x-4">
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="gender" value="M" class="text-green-500 focus:ring-green-500">
+                                                    <span class="ml-2 text-sm text-gray-700">남성</span>
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="gender" value="F" class="text-green-500 focus:ring-green-500">
+                                                    <span class="ml-2 text-sm text-gray-700">여성</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">가구 구성원 수</label>
+                                            <input type="number" id="profileHouseHold" min="1" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="profileVegan" class="text-green-500 focus:ring-green-500 rounded">
+                                                <span class="ml-2 text-sm text-gray-700">비건 (채식주의자)</span>
+                                            </label>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">알레르기 정보</label>
+                                            <input type="text" id="profileAllergy" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="예: 견과류, 해산물, 유제품">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">싫어하는 음식</label>
+                                            <input type="text" id="profileUnfavorite" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="예: 양파, 당근, 피망">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 멤버십 섹션 -->
+                                <div class="bg-yellow-50 rounded-lg p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                        <i class="fas fa-crown text-yellow-500 mr-2"></i>
+                                        멤버십 정보
+                                    </h3>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">현재 멤버십 등급</label>
+                                        <input type="text" id="profileMembership" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed" placeholder="멤버십 정보를 불러오는 중...">
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            멤버십 변경은 고객센터를 통해 문의해주세요.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- 버튼 섹션 -->
+                                <div class="flex justify-end space-x-4 pt-6">
+                                    <button type="button" onclick="cancelProfileEdit()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
+                                        <i class="fas fa-times mr-2"></i>취소
+                                    </button>
+                                    <button type="submit" onclick="saveProfile(); return false;" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200">
+                                        <i class="fas fa-save mr-2"></i>저장
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주문 정보 섹션 (숨겨진 상태) -->
+    <!-- <div id="orderSection" class="hidden"> -->
+        <!-- <div id="orderInfo"></div> -->
+    <!-- </div> -->
+
+    <!-- JavaScript -->
+    <!-- hjs 수정: 단일 페이지 탭 모드에서는 navigation.js를 사용하지 않습니다. -->
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/ui-helpers.js"></script>
+    <!-- hjs 수정: 장바구니/결제 모듈 분리 -->
+    <script src="/static/js/chat-mod-cart.js"></script>
+    <!-- hjs 수정: 제품/레시피/음성/업로드/CS 모듈 로드 -->
+    <script src="/static/js/chat-mod-products.js"></script>
+    <script src="/static/js/chat-mod-recipes.js"></script>
+    <script src="/static/js/chat-mod-voice.js"></script>
+    <script src="/static/js/chat-mod-upload.js"></script>
+    <script src="/static/js/chat-mod-cs.js"></script>
+    <!-- hjs 수정: CS 증빙 전용 모듈 로드 -->
+    <script src="/static/js/cs_evidence.js"></script>
+    <script src="/static/js/markdown.js"></script>
+    <script src="/static/js/chat-mod-vision.js"></script>
+    <!-- hjs 수정: 전역 사용자 ID 주입(메타에서 안전하게 읽기) -->
+    <script>
+        (function(){
+            var meta = document.querySelector('meta[name="current-user-id"]');
+            var uid = meta && meta.content ? meta.content.trim() : '';
+            window.CURRENT_USER_ID = uid ? uid : null;
+            // hjs 수정: 멤버십 배지 표기
+            function badgeHtml(tier){
+                var t = String(tier||'').toLowerCase();
+                if (t==='gold')   return '<span class="inline-flex items-center px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">GOLD</span>';
+                if (t==='premium')return '<span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-700">PREMIUM</span>';
+                if (t==='basic')  return '<span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-700">BASIC</span>';
+                return '';
+            }
+            fetch('/api/profile/get', { credentials:'include' })
+              .then(function(r){ return r.json(); })
+              .then(function(d){
+                  var tier = (d && d.user && d.user.membership) ? d.user.membership : null;
+                  if (!tier) return;
+                  var chatBadge = document.getElementById('membershipBadge');
+                  var myBadge = document.getElementById('mypageMembershipBadge');
+                  if (chatBadge) chatBadge.innerHTML = badgeHtml(tier);
+                  if (myBadge) myBadge.innerHTML = badgeHtml(tier);
+              }).catch(function(){});
+        })();
+    </script>
+    <script src="/static/js/chat.js"></script>
+    <!-- hjs 수정: 마이페이지 스크립트 포함 (탭 모드 가드 사용) -->
+    <script src="/static/js/mypage.js"></script>
+    
+    <!-- 탭 기능 추가 -->
+    <script>
+        // hjs 수정: 상단 챗봇/마이페이지 전환
+        function switchTopTab(target){
+            const chatView = document.getElementById('chat-view');
+            const myView = document.getElementById('mypage-view');
+            const btnChat = document.getElementById('navChatbot');
+            const btnMy = document.getElementById('navMypage');
+            if (target === 'mypage'){
+                chatView.classList.add('hidden');
+                myView.classList.remove('hidden');
+                // 마이페이지 선택: 마이페이지 버튼은 진한 녹색 배경 + 흰글씨
+                btnChat.className = 'nav-btn px-4 py-2 bg-white text-green-600 rounded-lg font-medium transition duration-300 hover:bg-gray-50';
+                btnMy.className = 'nav-btn active px-4 py-2 bg-green-600 text-white rounded-lg font-medium transition duration-300 hover:bg-green-700';
+                try { showContent('orders'); } catch(_){ }
+            } else {
+                myView.classList.add('hidden');
+                chatView.classList.remove('hidden');
+                // 챗봇 선택: 챗봇 버튼은 진한 녹색 배경 + 흰글씨
+                btnMy.className = 'nav-btn px-4 py-2 bg-white text-green-600 rounded-lg font-medium transition duration-300 hover:bg-gray-50';
+                btnChat.className = 'nav-btn active px-4 py-2 bg-green-600 text-white rounded-lg font-medium transition duration-300 hover:bg-green-700';
+            }
+        }
+        // 탭 전환 기능
+        function initializeTabs() {
+            // 좌측 패널 탭 (레시피/즐겨찾기)
+            const leftTabs = document.querySelectorAll('.left-panel .tab-btn');
+            const leftContents = document.querySelectorAll('.left-panel .panel-content');
+            
+            leftTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetTab = tab.dataset.tab;
+                    
+                    // 탭 버튼 활성화 상태 변경
+                    leftTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // 콘텐츠 표시/숨김
+                    leftContents.forEach(content => {
+                        if (content.id === targetTab + 'Section') {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+            });
+            
+            // 우측 패널 탭 (상품/장바구니)
+            const rightTabs = document.querySelectorAll('.right-panel .tab-btn');
+            const rightContents = document.querySelectorAll('.right-panel .panel-content');
+            
+            rightTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetTab = tab.dataset.tab;
+                    
+                    // 탭 버튼 활성화 상태 변경
+                    rightTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // 콘텐츠 표시/숨김
+                    rightContents.forEach(content => {
+                        if (content.id === targetTab + 'Section') {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        // 즐겨찾기 토글 기능
+        function toggleFavorite(button) {
+            const icon = button.querySelector('i');
+            if (icon.classList.contains('text-gray-300')) {
+                icon.classList.remove('text-gray-300');
+                icon.classList.add('text-yellow-400');
+            } else {
+                icon.classList.remove('text-yellow-400');
+                icon.classList.add('text-gray-300');
+            }
+        }
+
+    
+        // hjs 수정: DOM 로드 시 샘플 로직 제거, 실제 UI만 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTabs();
+            // hjs 수정: 카트 선택 툴바 이벤트 바인딩
+            const selectAll = document.getElementById('cartSelectAll');
+            const selectNone = document.getElementById('cartSelectNone');
+            const removeSel = document.getElementById('cartRemoveSelected');
+            if (selectAll){ selectAll.addEventListener('click', ()=>{ document.querySelectorAll('.cart-select').forEach(cb=>{ cb.checked = true; }); }); }
+            if (selectNone){ selectNone.addEventListener('click', ()=>{ document.querySelectorAll('.cart-select').forEach(cb=>{ cb.checked = false; }); }); }
+            if (removeSel){ removeSel.addEventListener('click', ()=>{ try { if (window.ChatCart) ChatCart.handleRemoveSelected(window._chatbot); } catch(_){} }); }
+        });
+    </script>
+    
+    <!-- 로그아웃 기능 -->
+    <script>
+        
+         async function logout() {
+            // hjs 수정: 간단한 폴백 추가 — /auth/logout 실패 시 /auth/logout-beacon 호출
+            const clearLocal = () => {
+              try {
+                const u = JSON.parse(localStorage.getItem('user_info')||'{}');
+                const uid = u.user_id || '';
+                localStorage.removeItem('access_token');
+                if (uid){
+                  localStorage.removeItem(`chat_messages_${uid}`);
+                  localStorage.removeItem(`chat_session_${uid}`);
+                  localStorage.removeItem(`chat_pending_message_${uid}`);
+                }
+                localStorage.removeItem('user_info');
+              } catch(_) {}
+            };
+            try {
+              const token = localStorage.getItem('access_token');
+              const headers = { 'Content-Type': 'application/json' };
+              if (token) headers['Authorization'] = `Bearer ${token}`;
+              const res = await fetch('/auth/logout', { method:'POST', headers, credentials:'include' });
+              if (res.ok) { clearLocal(); window.location.href='/'; return; }
+              // 폴백: 권한 없이 쿠키만 제거
+              await fetch('/auth/logout-beacon', { method:'POST', credentials:'include' });
+              clearLocal(); window.location.href='/';
+            } catch (e) {
+              console.error('로그아웃 오류:', e);
+              try { await fetch('/auth/logout-beacon', { method:'POST', credentials:'include' }); } catch(_) {}
+              clearLocal(); window.location.href='/';
+            }
+         }
+    </script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+.carrot-scene {
+  position: relative;
+  width: 220px;
+  height: 80px;
+  margin: 10px 0;
+}
+
+/* 귀여운 농부 */
+.farmer {
+  position: absolute;
+  left: 0px;
+  bottom: 35px;
+  width: 25px;
+  height: 35px;
+  animation: farmer-walk 5s linear;
+}
+
+.hat {
+  width: 20px;
+  height: 12px;
+  background: #e99931;
+  border-radius: 50% 50% 0 0;
+  margin: 0 auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.face {
+  width: 19px;
+  height: 19px;
+  background: #FFE0BD;
+  border-radius: 50%;
+  margin: 0.5px auto;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.eye {
+  width: 3.2px;
+  height: 3px;
+  background: #000;
+  border-radius: 50%;
+  position: absolute;
+  top: 7px;
+  transform: translateZ(0);
+  will-change: auto;
+}
+.eye.left { left: 3px; }
+.eye.right { right: 3px; }
+
+.mouth {
+  width: 4px;
+  height: 2px;
+  border: 1px solid #000;
+  border-top: none;
+  border-radius: 0 0 50% 50%;
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.body {
+  width: 12px;
+  height: 15px;
+  background: #4CAF50;
+  margin: 0 auto;
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+
+.pickaxe {
+  position: absolute;
+  bottom: -4px;
+  right: -12.8px;
+  font-size: 12px;
+  transform-origin: center;
+  animation: pickaxe-swing 0.5s ease-in-out infinite alternate-reverse;
+}
+
+.leg {
+  width: 3px;
+  height: 8px;
+  background: #333;
+  position: absolute;
+  bottom: -8px;
+  border-radius: 2px;
+}
+.left-leg { 
+  left: 6px;
+  animation: leg-walk 0.4s ease-in-out infinite alternate;
+}
+.right-leg { 
+  right: 6px;
+  animation: leg-walk 0.4s ease-in-out infinite alternate-reverse;
+}
+
+/* 땅과 당근들 */
+.ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to bottom, #8B4513, #654321);
+  border-radius: 5px;
+}
+
+.carrots {
+  position: absolute;
+  bottom: 15px;
+  left: 50px;
+  display: flex;
+  gap: 12px;
+}
+
+.carrot-plant {
+  position: relative;
+  transition: all 0.5s ease-out;
+}
+
+.carrot-body {
+  font-size: 16px;
+  transform: translateY(8px);
+  transition: all 0.5s ease-out;
+}
+
+.carrot-leaves {
+  font-size: 10px;
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.5s ease-out;
+}
+
+.carrot-plant.pulled .carrot-body {
+  transform: translateY(-15px) rotate(15deg) scale(1.2);
+  animation: carrot-bounce 0.5s ease-out;
+}
+
+.carrot-plant.pulled .carrot-leaves {
+  transform: translateX(-50%) translateY(-20px) scale(1.5);
+  animation: leaves-flutter 0.5s ease-out;
+}
+
+/* 애니메이션들 */
+@keyframes farmer-walk {
+  0% { left: 0px; }
+  100% { left: 180px; }
+}
+
+@keyframes arm-swing-pickaxe {
+  0% { transform: rotate(-15deg); }
+  100% { transform: rotate(40deg); }
+}
+
+@keyframes pickaxe-swing {
+  0% { transform: rotate(-30deg); }
+  100% { transform: rotate(60deg); }
+}
+
+@keyframes leg-walk {
+  0% { transform: rotate(-20deg); }
+  100% { transform: rotate(20deg); }
+}
+
+@keyframes carrot-bounce {
+  0% { transform: translateY(-15px) rotate(15deg) scale(1.2); }
+  50% { transform: translateY(-25px) rotate(25deg) scale(1.4); }
+  100% { transform: translateY(-15px) rotate(15deg) scale(1.2); }
+}
+
+@keyframes leaves-flutter {
+  0% { transform: translateX(-50%) translateY(-20px) scale(1.5); }
+  25% { transform: translateX(-50%) translateY(-25px) scale(1.7) rotate(5deg); }
+  50% { transform: translateX(-50%) translateY(-22px) scale(1.6) rotate(-5deg); }
+  100% { transform: translateX(-50%) translateY(-20px) scale(1.5); }
+}

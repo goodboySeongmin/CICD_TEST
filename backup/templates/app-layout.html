@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qook - {{ page_title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/fixed-navigation.css" rel="stylesheet">
+    <link href="/static/css/chat.css" rel="stylesheet">
+    <link href="/static/css/mypage.css" rel="stylesheet">
+    <link href="/static/css/markdown.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- 고정 네비게이션 바 -->
+    <header class="fixed-nav-bar">
+        <div class="fixed-nav-content">
+            <!-- 로고 -->
+            <a href="/" class="nav-logo">
+                <img src="{{ url_for('static', path='/images/qook_logo.png') }}" alt="Qook 로고">
+                Qook
+            </a>
+            
+            <!-- 중앙 네비게이션 버튼 -->
+            <div class="nav-buttons">
+                <button id="navChatbot" class="nav-tab active" onclick="switchToPage('chatbot')">
+                    <i class="fas fa-robot"></i>
+                    챗봇
+                </button>
+                <button id="navMypage" class="nav-tab" onclick="switchToPage('mypage')">
+                    <i class="fas fa-user"></i>
+                    마이페이지
+                </button>
+            </div>
+            
+            <!-- 우측 액션 -->
+            <div class="nav-actions">
+                {% if current_user %}
+                    <button class="nav-action-btn" title="멤버십">
+                        <i class="fas fa-gem"></i>
+                    </button>
+                    <span class="text-white text-sm">{{ current_user }}</span>
+                    <button onclick="logout()" class="nav-action-btn" title="로그아웃">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                {% else %}
+                    <a href="/login" class="nav-action-btn" title="로그인">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    
+    <!-- 콘텐츠 영역 -->
+    <div class="content-area">
+        <div class="page-slider show-chatbot" id="pageSlider">
+            <!-- 챗봇 페이지 -->
+            <div class="page-slide" id="chatbotPage">
+                <div class="page-content-wrapper">
+                    <!-- 챗봇 콘텐츠가 여기에 들어갈 예정 -->
+                    <div class="flex h-full px-10 md:px-16 lg:px-24 xl:px-40 2xl:px-56">
+                        <!-- 좌측: 채팅 카드 -->
+                        <div class="flex-1 flex flex-col min-h-0">
+                            <div class="bg-white rounded-2xl ring-1 ring-gray-200 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0 mt-6">
+                                <!-- 챗봇 헤더 (간소화) -->
+                                <div class="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 flex items-center justify-between border-b border-gray-200">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-robot text-green-600"></i>
+                                        </div>
+                                        <div>
+                                            <h1 class="text-gray-800 font-bold text-lg">AI 어시스턴트</h1>
+                                            <p class="text-gray-600 text-sm">신선한 도움을 드릴게요! 🥬</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <button id="clearChat" class="text-gray-600 hover:text-green-600 transition p-2" title="채팅 지우기">
+                                        <i class="fas fa-refresh"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- 챗봇 콘텐츠 영역 플레이스홀더 -->
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center text-gray-500">
+                                        <i class="fas fa-robot text-4xl mb-4 text-green-500"></i>
+                                        <p class="text-lg font-medium mb-2">챗봇 준비 중...</p>
+                                        <p class="text-sm">곧 대화를 시작할 수 있습니다</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 우측: 사이드바 (간소화) -->
+                        <div class="w-96 bg-white sidebar-shadow overflow-y-auto rounded-2xl ring-1 ring-gray-200 mt-6 ml-4">
+                            <div class="border-b border-gray-200 p-4">
+                                <h2 class="font-bold text-gray-800 flex items-center">
+                                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                    관련 정보
+                                </h2>
+                            </div>
+                            
+                            <div class="p-4">
+                                <div class="text-center text-gray-500">
+                                    <i class="fas fa-shopping-basket text-2xl mb-2 text-green-500"></i>
+                                    <p class="text-sm">상품 추천 대기 중</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 마이페이지 페이지 -->
+            <div class="page-slide" id="mypagePage">
+                <div class="page-content-wrapper">
+                    <!-- 마이페이지 콘텐츠가 여기에 들어갈 예정 -->
+                    <div class="min-h-screen bg-gray-50 pt-6">
+                        <div class="max-w-7xl mx-auto">
+                            <div class="flex">
+                                <!-- 왼쪽 사이드바 -->
+                                <div class="w-80 bg-green-500 min-h-screen rounded-l-2xl">
+                                    <div class="p-8">
+                                        <!-- 사용자 정보 섹션 -->
+                                        <div class="text-center mb-8">
+                                            <div class="w-24 h-24 bg-gray-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                                <i class="fas fa-user text-white text-3xl"></i>
+                                            </div>
+                                            <h2 class="text-2xl font-bold text-white mb-4">홍길동 님</h2>
+                                            <button class="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition duration-200">
+                                                회원정보 수정
+                                            </button>
+                                        </div>
+
+                                        <!-- 메뉴 리스트 -->
+                                        <div class="space-y-3">
+                                            <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200 bg-green-600 bg-opacity-30">
+                                                <i class="fas fa-clock text-lg mr-4"></i>
+                                                <span class="font-medium">주문내역 확인</span>
+                                            </div>
+                                            
+                                            <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200">
+                                                <i class="fas fa-truck text-lg mr-4"></i>
+                                                <span class="font-medium">배송내역 확인</span>
+                                            </div>
+                                            
+                                            <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200">
+                                                <i class="fas fa-comments text-lg mr-4"></i>
+                                                <span class="font-medium">채팅 히스토리</span>
+                                            </div>
+                                            
+                                            <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200">
+                                                <i class="fas fa-utensils text-lg mr-4"></i>
+                                                <span class="font-medium">저장한 레시피</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 오른쪽 메인 콘텐츠 -->
+                                <div class="flex-1 p-12">
+                                    <div class="bg-white rounded-2xl shadow-sm h-full overflow-y-auto rounded-l-none">
+                                        <div class="flex items-center justify-center h-full">
+                                            <div class="text-center">
+                                                <i class="fas fa-user text-4xl mb-4 text-green-500"></i>
+                                                <p class="text-lg font-medium mb-2">마이페이지 준비 중...</p>
+                                                <p class="text-sm text-gray-500">개인 정보를 불러오고 있습니다</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="/static/js/fixed-navigation.js"></script>
+    
+    <!-- 로그아웃 기능 -->
+    <script>
+        async function logout() {
+            try {
+                const response = await fetch('/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    console.error('로그아웃 실패');
+                }
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+            }
+        }
+    </script>
+</body>
+</html>

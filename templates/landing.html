@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qook - 신선한 하루의 시작</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/typography.css" rel="stylesheet">
+    <link href="/static/css/landing.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- 헤더 -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="/" class="flex items-center">
+                            <img
+                                src="{{ url_for('static', path='/images/qook_logo.png') }}"
+                                alt="Qook 로고"
+                                class="h-16 w-auto"
+                                loading="lazy"
+                            >
+                        </a>
+                    </div>
+                </div>
+                <nav class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#features" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">기능</a>
+                        <a href="/membership" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">멤버십</a>
+                        <a href="#how-it-works" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">사용방법</a>
+                        {% if current_user %}
+                            <button onclick="logout()" class="text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium">로그아웃</button>
+                        {% else %}
+                            <a href="/login" class="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">로그인</a>
+                            <a href="/register" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition duration-300">회원가입</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 히어로 섹션 -->
+    <section class="fresh-gradient py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+            <div>
+                <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                    신선한 하루의 <br>
+                    <span class="text-yellow-300">시작</span>
+                </h1>
+                <p class="text-xl text-blue-100 mb-8 leading-relaxed">
+                    AI 챗봇과 함께하는 스마트한 신선식품 쇼핑! <br>
+                    검색부터 주문, 고객서비스까지 모든 것을 한 번에.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    {% if current_user %}
+                        <a href="/chat" class="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition duration-300 text-center">
+                            <i class="fas fa-comments mr-2"></i>
+                            지금 시작하기
+                        </a>
+                    {% else %}
+                        <a href="/login" class="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition duration-300 text-center">
+                            <i class="fas fa-comments mr-2"></i>
+                            지금 시작하기
+                        </a>
+                    {% endif %}
+                    <a href="#features" class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-green-600 transition duration-300 text-center">
+                        기능 살펴보기
+                    </a>
+                </div>
+            </div>
+            <div class="mt-12 lg:mt-0">
+                <div class="relative">
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 bounce-animation">
+                        <div class="flex items-center mb-4">
+                            <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-end">
+                                <div class="mr-3 bg-green-600 text-white rounded-lg px-4 py-2">
+                                    유기농 사과 주문하고 싶어요
+                                </div>
+                                <div class="bg-green-100 p-2 rounded-full">
+                                    <i class="fas fa-user text-green-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="bg-green-100 p-2 rounded-full">
+                                    <i class="fas fa-robot text-green-600"></i>
+                                </div>
+                                <div class="ml-3 bg-gray-100 rounded-lg px-4 py-2">
+                                    경북 안동산 유기농 사과를 추천드려요! 2kg에 6,000원입니다. <br>장바구니에 담아드릴까요?
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <div class="mr-3 bg-green-600 text-white rounded-lg px-4 py-2">
+                                    네, 담아주세요!
+                                </div>
+                                <div class="bg-green-100 p-2 rounded-full">
+                                    <i class="fas fa-user text-green-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+
+
+    <!-- 기능 섹션 -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    왜 Qook 챗봇인가요?
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    AI 기반의 스마트한 기능으로 신선식품 쇼핑을 더욱 쉽고 편리하게 만들어보세요.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl card-hover">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-search text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">스마트 상품 검색</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        "유기농 사과", "비건 요리 재료" 등 자연어로 검색하면 AI가 최적의 상품을 찾아드려요.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl card-hover">
+                    <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-utensils text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">레시피 기반 쇼핑</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        "김치찌개 만들고 싶어요"라고 하면 레시피와 함께 필요한 재료를 모두 추천해드려요.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-8 rounded-2xl card-hover">
+                    <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-shopping-cart text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">원터치 주문</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        복잡한 주문 과정 없이 대화만으로 장바구니 담기부터 결제까지 한 번에 처리해요.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 p-8 rounded-2xl card-hover">
+                    <div class="w-16 h-16 bg-yellow-600 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-headset text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">24/7 고객서비스</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        배송 문의, 환불 요청, 상품 문의까지 언제든지 빠르고 정확한 답변을 받으세요.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-red-50 to-red-100 p-8 rounded-2xl card-hover">
+                    <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-leaf text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">신선도 보장</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        수확 후 24시간 내 배송하는 콜드체인 시스템으로 최고의 신선함을 약속드려요.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 p-8 rounded-2xl card-hover">
+                    <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">개인맞춤 추천</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        알레르기, 식단 제한, 선호도를 기억해서 나만을 위한 맞춤 상품을 추천해드려요.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 사용방법 섹션 -->
+    <section id="how-it-works" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    어떻게 사용하나요?
+                </h2>
+                <p class="text-xl text-gray-600">
+                    3단계로 간단하게 신선식품을 주문하세요.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">1</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">대화 시작</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        "사과 주문하고 싶어요", "김치찌개 레시피 알려주세요" 등 <br>자연스럽게 대화를 시작하세요.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">2</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">상품 선택</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        AI가 추천하는 신선한 상품들 중에서 <br>마음에 드는 것을 선택하고 장바구니에 담으세요.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-white">3</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">간편 결제</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        "주문할게요"라고 말씀하시면 <br>배송지 확인 후 바로 주문이 완료됩니다.
+                    </p>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                {% if current_user %}
+                    <a href="/chat" class="bg-green-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition duration-300 inline-flex items-center">
+                        <i class="fas fa-rocket mr-2"></i>
+                        지금 바로 체험하기
+                    </a>
+                {% else %}
+                    <a href="/login" class="bg-green-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition duration-300 inline-flex items-center">
+                        <i class="fas fa-rocket mr-2"></i>
+                        지금 바로 체험하기
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 통계 섹션 -->
+    <section class="py-20 bg-green-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <div>
+                    <div class="text-4xl font-bold text-white mb-2">98%</div>
+                    <div class="text-green-100">고객 만족도</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-white mb-2">24시간</div>
+                    <div class="text-green-100">최대 배송시간</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-white mb-2">1000+</div>
+                    <div class="text-green-100">신선 상품 종류</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold text-white mb-2">5초</div>
+                    <div class="text-green-100">평균 응답시간</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <h3 class="text-2xl font-bold mb-4 inline-flex items-center gap-3">
+                        <img
+                            src="{{ url_for('static', path='/images/qook_logo_footer.png') }}"
+                            alt="Qook 로고"
+                            class="h-8 w-auto"
+                            loading="lazy"
+                        >
+                        <span>Qook</span>
+                    </h3>
+                    <p class="text-gray-400 mb-6 max-w-md">
+                        AI 챗봇과 함께하는 신선식품 플랫폼. 건강한 식재료로 더 나은 삶을 만들어가세요.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">서비스</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">챗봇 서비스</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">신선식품</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">레시피</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">고객지원</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">고객센터</a></li>
+                        <li class="text-gray-400">📞 1588-0000</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 Qook. All rights reserved. Made with ❤️ for fresh food lovers.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="/static/js/landing.js"></script>
+    
+    <!-- 인증 관련 JavaScript -->
+    <script>
+        async function logout() {
+            try {
+                // 로컬 토큰/유저 정보 및 채팅 기록 제거
+                const u = JSON.parse(localStorage.getItem('user_info')||'{}');
+                const uid = u.user_id || '';
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user_info');
+                if (uid){
+                  localStorage.removeItem(`chat_messages_${uid}`);
+                  localStorage.removeItem(`chat_session_${uid}`);
+                  localStorage.removeItem(`chat_pending_message_${uid}`);
+                }
+                // 쿠키 기반 로그아웃(Authorization 헤더 없이 동작)
+                const response = await fetch('/auth/logout-beacon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

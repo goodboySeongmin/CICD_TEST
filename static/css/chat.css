@@ -1,0 +1,664 @@
+/* 챗봇 페이지 전용 CSS */
+
+/* 기본 설정 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Noto Sans KR", Roboto, "Segoe UI", sans-serif;
+    background-color: #f9fafb;
+}
+
+/* ===== 3컬럼 레이아웃 ===== */
+.chat-layout {
+    height: 100vh;
+    background-color: #f9fafb;
+}
+
+/* 좌측 패널 (레시피/즐겨찾기) */
+.left-panel {
+    width: 360px;
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 중앙 패널 (챗봇) */
+.center-panel {
+    flex: 1;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* 우측 패널 (상품/장바구니) */
+.right-panel {
+    width: 360px;
+    background: white;
+    border-left: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ===== 탭 버튼 공통 ===== */
+.panel-tabs {
+    display: flex;
+    background: #10b981;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 16px 0 16px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px 8px 0 0;
+    margin-right: 4px;
+}
+
+.tab-btn.active {
+    background: white;
+    color: #10b981;
+    font-weight: 600;
+    border: 1px solid #e5e7eb;
+    border-bottom: none;
+    position: relative;
+    z-index: 1;
+}
+
+.tab-btn:not(.active):hover {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+/* ===== 패널 콘텐츠 ===== */
+.panel-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: none;
+}
+
+.panel-content.active {
+    display: block;
+}
+
+/* ===== 좌측: 레시피 카드 ===== */
+.recipe-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.recipe-card {
+    background: linear-gradient(135deg, #ffffff);
+    border-radius: 12px;
+    padding: 20px;
+    /* color: white; */
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.recipe-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.recipe-card-body {
+    flex: 1;
+}
+
+.recipe-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.recipe-description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.recipe-info {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* hjs 수정: 위치 지정(top/right) 제거 — 각 카드에서 bottom/left 등 개별 지정 */
+.favorite-btn {
+    position: absolute;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 4px;
+    border-radius: 4px;
+    z-index: 10;
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.favorite-btn i.text-yellow-400 {
+    color: #fbbf24 !important;
+}
+
+/* 즐겨찾기 빈 상태 */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    text-align: center;
+}
+
+/* ===== 중앙: 챗봇 영역 ===== */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 메시지 스타일 */
+.message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.message.user-message {
+    flex-direction: row-reverse;
+}
+
+/* 카드 레이아웃 정렬 보강: 텍스트 영역(파란 박스) + 버튼 영역(빨간 박스) 고정 */
+.product-card, .ingredient-card { 
+    display:flex; 
+    align-items: center;
+    justify-content: space-between;
+    flex-direction:column; 
+    height:100%; 
+}
+.product-card .product-info, .ingredient-card .product-info { text-align: left; flex-grow: 1;min-height: 64px; margin-right: auto;}
+.product-card .card-footer, .ingredient-card .card-footer { display:flex; justify-content: flex-end; margin-left:auto; }
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.bot-avatar {
+    background: #f0fdf4;
+    color: #059669;
+}
+
+.user-avatar {
+    background: #10b981;
+    color: white;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.bot-bubble {
+    background: #f0fdf4;
+    color: #1f2937;
+    border-radius: 18px 18px 18px 4px;
+}
+
+.user-bubble {
+    background: #10b981;
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+}
+
+/* 입력창 */
+.chat-input {
+    padding: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+}
+
+.message-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.message-input:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.input-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-btn:hover {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.input-btn.primary {
+    background: #10b981;
+    color: white;
+}
+
+.input-btn.primary:hover {
+    background: #059669;
+}
+
+.input-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* ===== 우측: 상품/장바구니 ===== */
+.product-cards, .cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 상품 카드 */
+.product-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.product-card:hover {
+    border-color: #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    transform: translateY(-2px);
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.product-origin {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.product-price {
+    font-size: 14px;
+    color: #059669;
+    font-weight: 600;
+}
+
+.add-cart-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-cart-btn:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+/* 장바구니 아이템 */
+.cart-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-name {
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.item-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quantity-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.quantity-btn:hover {
+    background: #f3f4f6;
+}
+
+.quantity {
+    min-width: 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.item-price {
+    font-weight: 600;
+    color: #059669;
+}
+
+/* 장바구니 요약 */
+.cart-summary {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.summary-row.total {
+    font-weight: 700;
+    font-size: 16px;
+    color: #059669;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 8px;
+}
+
+.checkout-btn {
+    width: 100%;
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.2s ease;
+}
+
+.checkout-btn:hover {
+    background: #059669;
+}
+
+/* ===== 스크롤바 스타일 ===== */
+.chat-messages::-webkit-scrollbar,
+.panel-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track,
+.panel-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb,
+.panel-content::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover,
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* ===== 숨김 요소 스타일 ===== */
+#voiceCancel[hidden],
+#cameraButton[hidden],
+#imageInput[hidden],
+#loadingIndicator[hidden],
+.quick-actions[hidden],
+#clearChat[hidden],
+#orderSection[hidden] {
+    display: none !important;
+}
+
+/* 정지 버튼 기본 숨김 */
+#voiceCancel {
+    display: none;
+}
+
+/* 정지 버튼 활성화 시 */
+#voiceCancel.show {
+    display: flex !important;
+}
+
+/* ===== 로딩 인디케이터 스타일 ===== */
+#loadingIndicator {
+    margin-bottom: 16px;
+}
+
+.message-bubble-bot {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    background: #f0fdf4;
+    color: #1f2937;
+    border-radius: 18px 18px 18px 4px;
+}
+
+/* === JS(addMessage)에서 쓰는 사용자 말풍선 클래스 보강 === */
+.message-bubble-user {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px 18px 4px 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    background: #10b981; /* Tailwind emerald-500 */
+    color: #fff;
+}
+
+.loading-icon {
+    animation: spin 1s linear infinite;
+}
+
+.rotating-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading-search {
+    color: #059669 !important;
+}
+
+.loading-recipe {
+    color: #f59e0b !important;
+}
+
+.loading-cart {
+    color: #3b82f6 !important;
+}
+
+.loading-cs {
+    color: #8b5cf6 !important;
+}
+
+.loading-dots::after {
+    content: '...';
+    animation: dots 1.4s infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* 음성 녹음 중 스타일 */
+.message-input.recording {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    animation: pulse-recording 2s infinite;
+}
+
+@keyframes pulse-recording {
+    0%, 100% { border-color: #ef4444; }
+    50% { border-color: #f87171; }
+}
+
+#voiceInput.recording {
+    background: #ef4444;
+    color: white;
+    animation: pulse-recording-btn 1s infinite;
+}
+
+@keyframes pulse-recording-btn {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* 메시지 애니메이션 */
+.message-animation {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== 애니메이션 ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.recipe-card,
+.product-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== 반응형 디자인 ===== */
+@media (max-width: 1200px) {
+    .left-panel {
+        width: 280px;
+    }
+    
+    .right-panel {
+        width: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .chat-layout {
+        flex-direction: column;
+    }
+    
+    .left-panel,
+    .right-panel {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .center-panel {
+        flex: 1;
+        min-height: 400px;
+    }
+}

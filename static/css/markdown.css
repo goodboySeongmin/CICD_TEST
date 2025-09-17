@@ -1,0 +1,57 @@
+/* Markdown theme for bot messages */
+.message-bubble-bot .bot-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1f2937; /* gray-800 */
+}
+
+.message-bubble-bot .bot-text h1,
+.message-bubble-bot .bot-text h2,
+.message-bubble-bot .bot-text h3,
+.message-bubble-bot .bot-text h4,
+.message-bubble-bot .bot-text h5,
+.message-bubble-bot .bot-text h6 {
+  font-weight: 700;
+  margin: 0.4rem 0 0.3rem;
+}
+.message-bubble-bot .bot-text h1 { font-size: 1.25rem; border-bottom: 1px solid #e5e7eb; padding-bottom: .25rem; }
+.message-bubble-bot .bot-text h2 { font-size: 1.125rem; border-bottom: 1px solid #f3f4f6; padding-bottom: .2rem; }
+.message-bubble-bot .bot-text h3 { font-size: 1rem; }
+
+.message-bubble-bot .bot-text p { margin: 0.4rem 0; }
+
+.message-bubble-bot .bot-text ul { margin: 0.4rem 0 0.4rem 1.25rem; list-style: disc; }
+.message-bubble-bot .bot-text ol { margin: 0.4rem 0 0.4rem 1.25rem; list-style: decimal; }
+.message-bubble-bot .bot-text li { margin: 0.2rem 0; }
+
+.message-bubble-bot .bot-text a { color: #2563eb; text-decoration: underline; }
+.message-bubble-bot .bot-text a:hover { color: #1d4ed8; }
+
+.message-bubble-bot .bot-text code {
+  background: #f3f4f6; /* gray-100 */
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+}
+.message-bubble-bot .bot-text pre {
+  background: #0b1220;
+  color: #e5e7eb;
+  padding: 0.75rem;
+  border-radius: 8px;
+  overflow: auto;
+  margin: 0.5rem 0;
+}
+.message-bubble-bot .bot-text pre code { background: transparent; padding: 0; font-size: 12px; }
+
+.message-bubble-bot .bot-text blockquote {
+  border-left: 3px solid #10b981; /* emerald */
+  padding: 0.25rem 0.75rem;
+  background: #ecfdf5;
+  color: #065f46;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
+.message-bubble-bot .bot-text hr { border: 0; height: 1px; background: #e5e7eb; margin: 0.75rem 0; }
+

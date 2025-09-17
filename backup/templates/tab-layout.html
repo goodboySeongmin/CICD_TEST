@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qook - {{ page_title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/tab-navigation.css" rel="stylesheet">
+    <link href="/static/css/chat.css" rel="stylesheet">
+    <link href="/static/css/mypage.css" rel="stylesheet">
+    <link href="/static/css/markdown.css" rel="stylesheet">
+</head>
+<body class="tab-container">
+    <!-- 고정된 탭 네비게이션 바 -->
+    <header class="fixed-tab-nav">
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="chatbot">
+                <i class="fas fa-robot"></i>
+                챗봇
+            </button>
+            <button class="tab-btn" data-tab="mypage">
+                <i class="fas fa-user"></i>
+                마이페이지
+            </button>
+        </div>
+    </header>
+    
+    <!-- 콘텐츠 영역 -->
+    <main class="tab-content-area">
+        <!-- 챗봇 탭 콘텐츠 -->
+        <div class="tab-content chatbot-content" id="chatbot-content">
+            <div class="flex h-full px-4 md:px-6 lg:px-8 xl:px-12 gap-4">
+                <!-- 좌측 사이드바 -->
+                <div class="w-96 bg-white sidebar-shadow overflow-y-auto rounded-2xl ring-1 ring-gray-200 mt-6">
+                    <div class="border-b border-gray-200 p-4">
+                        <div class="flex space-x-2">
+                            <button id="leftSidebarRecipes" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold text-base transition hover:bg-green-700 sidebar-tab-btn active">
+                                <i class="fas fa-utensils mr-2"></i>레시피
+                            </button>
+                            <button id="leftSidebarFavorites" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold text-base transition hover:bg-gray-300 sidebar-tab-btn">
+                                <i class="fas fa-heart mr-2"></i>즐겨찾기
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 레시피 섹션 -->
+                    <div id="leftSidebarRecipesContent" class="p-4 sidebar-content active">
+                        <div id="recipesList" class="space-y-3">
+                            <div class="text-gray-500 text-sm text-center py-4">
+                                레시피를 검색해보세요!
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 즐겨찾기 섹션 -->
+                    <div id="leftSidebarFavoritesContent" class="p-4 sidebar-content hidden">
+                        <div id="favoritesList" class="space-y-3">
+                            <div class="text-gray-500 text-sm text-center py-4">
+                                즐겨찾기한 레시피가 없습니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 중앙: 채팅 카드 -->
+                <div class="flex-1 flex flex-col min-h-0">
+                    <div class="bg-white rounded-2xl ring-1 ring-gray-200 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0 mt-6">
+                        <!-- 챗봇 헤더 -->
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 flex items-center justify-between border-b border-gray-200">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-robot text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-gray-800 font-bold text-lg">AI 어시스턴트</h1>
+                                    <p class="text-gray-600 text-sm">신선한 도움을 드릴게요! 🥬</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                <button id="clearChat" class="text-gray-600 hover:text-green-600 transition p-2" title="채팅 지우기">
+                                    <i class="fas fa-refresh"></i>
+                                </button>
+                                {% if current_user %}
+                                    <div class="flex items-center space-x-2 ml-4">
+                                        <a href="/membership" class="text-gray-600 hover:text-green-600 transition p-2" title="멤버십">
+                                            <i class="fas fa-gem"></i>
+                                        </a>
+                                        <span class="text-gray-700 text-sm">{{ current_user }}</span>
+                                        <button onclick="logout()" class="text-gray-600 hover:text-red-600 transition p-2" title="로그아웃">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <a href="/login" class="text-gray-600 hover:text-green-600 transition p-2" title="로그인">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- 본문 -->
+                        <div class="flex-1 flex min-h-0">
+                            <div class="flex-1 mx-auto w-full max-w-5xl px-4 flex flex-col min-h-0">
+                                <!-- 메시지 영역 -->
+                                <div class="flex-1 overflow-y-auto p-4 chat-container" id="chatContainer">
+                                    <div class="message-animation mb-6">
+                                        <div class="flex items-start">
+                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                                <i class="fas fa-robot text-green-600 text-sm"></i>
+                                            </div>
+                                            <div class="bg-green-50 rounded-2xl rounded-tl-sm px-4 py-3 max-w-md">
+                                                <p class="text-gray-800">
+                                                    안녕하세요! 신선한 식재료를 찾고 계신가요? 🥬<br>
+                                                    <span class="text-sm text-gray-600 mt-1 block">
+                                                        • "사과 주문하고 싶어요"<br>
+                                                        • "김치찌개 레시피 알려주세요"<br>
+                                                        • "배송 문의가 있어요"<br>
+                                                        이런 식으로 편하게 말씀해주세요!
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="messages"></div>
+
+                                    <!-- 로딩 인디케이터 -->
+                                    <div id="loadingIndicator" class="hidden mb-4">
+                                        <div class="flex items-start">
+                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                                <i class="fas fa-robot text-green-600 text-sm"></i>
+                                            </div>
+                                            <div class="bg-green-50 rounded-2xl rounded-tl-sm px-4 py-3 min-w-0 max-w-lg">
+                                                <div class="flex items-center space-x-3 mb-2">
+                                                    <div id="loadingIcon" class="loading-icon">
+                                                        <i class="fas fa-shopping-basket text-green-600"></i>
+                                                    </div>
+                                                    <span id="loadingText" class="text-gray-700 text-sm font-medium">상품을 검색 중입니다...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 입력창 -->
+                                <div class="bg-white border-t border-gray-200 p-4">
+                                    <form id="chatForm" class="flex items-center gap-3">
+                                        <div class="input-field flex-1 flex items-center rounded-full border border-gray-300 bg-white">
+                                            <button type="button" id="consultantButton" class="left-icon-btn" title="상담사 연결">
+                                                <i class="fas fa-headset"></i>
+                                            </button>
+                                            <input type="file" id="imageInput" accept="image/*" class="hidden">
+                                            <input type="text" id="messageInput" placeholder="메시지를 입력하세요..." class="flex-1 px-3 py-3 border-0 bg-transparent focus:outline-none focus:ring-0" autocomplete="off">
+                                        </div>
+                                        <div class="input-actions flex items-center gap-2">
+                                            <button type="button" id="voiceCancel" class="icon-btn icon-btn--ghost hidden" title="취소">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <button type="button" id="voiceInput" class="icon-btn icon-btn--ghost" title="음성 입력">
+                                                <i class="fas fa-microphone"></i>
+                                            </button>
+                                            <button type="submit" id="sendButton" class="icon-btn icon-btn--primary" title="전송">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <p class="text-xs text-gray-500 mt-2 text-center">
+                                        Enter로 전송 • Shift+Enter로 줄바꿈
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 우측: 사이드바 -->
+                <div class="w-96 bg-white sidebar-shadow overflow-y-auto rounded-2xl ring-1 ring-gray-200 mt-6">
+                    <div class="border-b border-gray-200 p-4">
+                        <div class="flex space-x-2">
+                            <button id="rightSidebarProducts" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold text-base transition hover:bg-green-700 sidebar-tab-btn active">
+                                <i class="fas fa-shopping-basket mr-2"></i>상품
+                            </button>
+                            <button id="rightSidebarCart" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold text-base transition hover:bg-gray-300 sidebar-tab-btn">
+                                <i class="fas fa-shopping-cart mr-2"></i>장바구니
+                                <span id="cartCountHeader" class="ml-1 bg-purple-600 text-white text-xs rounded-full px-2 py-0.5 hidden">0</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 상품 섹션 -->
+                    <div id="rightSidebarProductsContent" class="p-4 sidebar-content active">
+                        <div id="productsSection" class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fas fa-search text-green-600 mr-2"></i>
+                                검색 상품
+                            </h3>
+                            <div id="productsList" class="space-y-3">
+                                <div class="text-gray-500 text-sm text-center py-4">
+                                    상품을 검색해보세요!
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="ingredientsSection" class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fas fa-leaf text-yellow-600 mr-2"></i>
+                                추천 재료
+                            </h3>
+                            <div id="ingredientsList" class="space-y-3">
+                                <div class="text-gray-500 text-sm text-center py-4">
+                                    레시피 재료가 표시됩니다.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 장바구니 섹션 -->
+                    <div id="rightSidebarCartContent" class="p-4 sidebar-content hidden">
+                        <div id="cartSection" class="mb-6">
+                            <h3 class="font-semibold text-gray-700 mb-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-shopping-cart text-purple-600 mr-2"></i>
+                                    <span>장바구니 목록</span>
+                                </div>
+                                <span id="cartCount" class="cart-count-badge">0</span>
+                            </h3>
+                            <div id="cartItems" class="space-y-2 mb-3">
+                                <div class="text-gray-500 text-sm text-center py-4">
+                                    장바구니가 비어있습니다.
+                                </div>
+                            </div>
+                            
+                            <div id="cartTotal" class="cart-total-section text-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-gray-600">소계:</span>
+                                    <span id="subtotalAmount">0원</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-600">할인:</span>
+                                    <span class="discount-info" id="discountAmount">- 0원</span>
+                                </div>
+                                <div class="flex justify-between items-center font-bold text-base mb-3">
+                                    <span>총 금액:</span>
+                                    <span class="cart-total-price" id="totalAmount">0원</span>
+                                </div>
+                                <button id="checkoutButton" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 hidden">
+                                    <i class="fas fa-credit-card mr-2"></i>결제하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <!-- 퀵 액션 버튼들 -->
+                    <div class="p-4 border-t border-gray-200">
+                        <div class="space-y-2">
+                            <button class="quick-action w-full text-left px-4 py-3 bg-white rounded-lg border hover:bg-green-50 hover:border-green-300 transition" data-message="인기 상품 추천해주세요">
+                                <i class="fas fa-fire text-red-500 mr-2"></i>
+                                인기 상품 보기
+                            </button>
+                            <button class="quick-action w-full text-left px-4 py-3 bg-white rounded-lg border hover:bg-blue-50 hover:border-blue-300 transition" data-message="오늘 저녁 레시피 추천해주세요">
+                                <i class="fas fa-utensils text-blue-500 mr-2"></i>
+                                레시피 추천
+                            </button>
+                            <button class="quick-action w-full text-left px-4 py-3 bg-white rounded-lg border hover:bg-blue-50 hover:border-blue-300 transition" data-message="주문 내역 확인해주세요">
+                                <i class="fas fa-receipt text-blue-500 mr-2"></i>
+                                주문 내역 확인
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 마이페이지 탭 콘텐츠 -->
+        <div class="tab-content mypage-content" id="mypage-content">
+            <div class="min-h-full bg-gray-50 pt-6">
+                <div class="max-w-7xl mx-auto">
+                    <div class="flex">
+                        <!-- 왼쪽 사이드바 -->
+                        <div class="w-80 bg-green-500 min-h-screen rounded-l-2xl">
+                            <div class="p-8">
+                                <!-- 사용자 정보 섹션 -->
+                                <div class="text-center mb-8">
+                                    <div class="w-24 h-24 bg-gray-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                        <i class="fas fa-user text-white text-3xl"></i>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-white mb-4">
+                                        {% if current_user %}{{ current_user }}{% else %}홍길동{% endif %} 님
+                                    </h2>
+                                    <button class="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition duration-200" onclick="showContent('profile')">
+                                        회원정보 수정
+                                    </button>
+                                </div>
+
+                                <!-- 메뉴 리스트 -->
+                                <div class="space-y-3">
+                                    <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200 bg-green-600 bg-opacity-30" onclick="showContent('orders')">
+                                        <i class="fas fa-clock text-lg mr-4"></i>
+                                        <span class="font-medium">주문내역 확인</span>
+                                    </div>
+                                    
+                                    <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200" onclick="showContent('delivery')">
+                                        <i class="fas fa-truck text-lg mr-4"></i>
+                                        <span class="font-medium">배송내역 확인</span>
+                                    </div>
+                                    
+                                    <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200" onclick="showContent('chat')">
+                                        <i class="fas fa-comments text-lg mr-4"></i>
+                                        <span class="font-medium">채팅 히스토리</span>
+                                    </div>
+                                    
+                                    <div class="menu-item flex items-center text-white py-3 px-4 hover:bg-green-400 rounded-lg cursor-pointer transition duration-200" onclick="showContent('recipes')">
+                                        <i class="fas fa-utensils text-lg mr-4"></i>
+                                        <span class="font-medium">저장한 레시피</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 오른쪽 메인 콘텐츠 -->
+                        <div class="flex-1 p-12">
+                            <div class="bg-white rounded-2xl shadow-sm h-full overflow-y-auto rounded-l-none">
+                                <!-- 주문내역 콘텐츠 -->
+                                <div id="content-orders" class="content-section p-8">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="fas fa-shopping-bag text-green-500 mr-3"></i>
+                                        주문내역 확인
+                                    </h2>
+                                    
+                                    <div class="space-y-4">
+                                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-green-500">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <h3 class="font-semibold text-gray-800">신선한 사과 5kg</h3>
+                                                <span class="text-green-600 font-bold">29,900원</span>
+                                            </div>
+                                            <p class="text-gray-600 text-sm mb-2">주문일: 2024-03-15</p>
+                                            <div class="flex justify-between items-center">
+                                                <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">배송완료</span>
+                                                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">상세보기</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-yellow-500">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <h3 class="font-semibold text-gray-800">유기농 채소 박스</h3>
+                                                <span class="text-green-600 font-bold">39,900원</span>
+                                            </div>
+                                            <p class="text-gray-600 text-sm mb-2">주문일: 2024-03-12</p>
+                                            <div class="flex justify-between items-center">
+                                                <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">배송중</span>
+                                                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">상세보기</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 배송내역 콘텐츠 -->
+                                <div id="content-delivery" class="content-section p-8 hidden">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="fas fa-truck text-blue-500 mr-3"></i>
+                                        배송내역 확인
+                                    </h2>
+                                    
+                                    <div class="space-y-4">
+                                        <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+                                            <h3 class="font-semibold text-gray-800 mb-2">운송장 번호: 1234567890</h3>
+                                            <div class="space-y-2 text-sm">
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600">상품명</span>
+                                                    <span>유기농 채소 박스</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600">현재 위치</span>
+                                                    <span class="text-blue-600 font-medium">서울 강남구 배송센터</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600">예상 도착</span>
+                                                    <span class="text-green-600 font-medium">오늘 오후 3시</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 채팅 히스토리 콘텐츠 -->
+                                <div id="content-chat" class="content-section p-8 hidden">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="fas fa-comments text-purple-500 mr-3"></i>
+                                        채팅 히스토리
+                                    </h2>
+                                    
+                                    <div class="space-y-4">
+                                        <div class="bg-purple-50 rounded-lg p-4">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <h3 class="font-semibold text-gray-800">사과 주문 문의</h3>
+                                                <span class="text-gray-500 text-sm">2024-03-15</span>
+                                            </div>
+                                            <p class="text-gray-600 text-sm">신선한 사과를 주문하고 싶어요...</p>
+                                        </div>
+                                        
+                                        <div class="bg-purple-50 rounded-lg p-4">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <h3 class="font-semibold text-gray-800">레시피 추천 요청</h3>
+                                                <span class="text-gray-500 text-sm">2024-03-12</span>
+                                            </div>
+                                            <p class="text-gray-600 text-sm">김치찌개 레시피를 알려주세요...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 저장한 레시피 콘텐츠 -->
+                                <div id="content-recipes" class="content-section p-8 hidden">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="fas fa-utensils text-orange-500 mr-3"></i>
+                                        저장한 레시피
+                                    </h2>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                                            <h3 class="font-semibold text-gray-800 mb-2">김치찌개</h3>
+                                            <p class="text-gray-600 text-sm mb-3">돼지고기와 김치로 만드는 든든한 찌개</p>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-orange-600 text-sm">조리시간: 30분</span>
+                                                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">레시피 보기</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                                            <h3 class="font-semibold text-gray-800 mb-2">된장찌개</h3>
+                                            <p class="text-gray-600 text-sm mb-3">시원하고 담백한 된장찌개</p>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-orange-600 text-sm">조리시간: 25분</span>
+                                                <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">레시피 보기</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 개인정보 수정 콘텐츠 -->
+                                <div id="content-profile" class="content-section p-8 hidden">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                                        <i class="fas fa-user-edit text-purple-500 mr-3"></i>
+                                        개인정보 수정
+                                    </h2>
+                                    
+                                    <form id="profileForm" class="space-y-6">
+                                        <!-- 기본 정보 섹션 -->
+                                        <div class="bg-gray-50 rounded-lg p-6">
+                                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                                <i class="fas fa-id-card text-blue-500 mr-2"></i>
+                                                기본 정보
+                                            </h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">회원 아이디</label>
+                                                    <input type="text" id="user_id" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-500" readonly>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
+                                                    <input type="text" id="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                                                    <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
+                                                    <input type="tel" id="phone_num" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="010-0000-0000">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">생년월일</label>
+                                                    <input type="date" id="birth_date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">나이</label>
+                                                    <input type="number" id="age" min="1" max="150" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">주소</label>
+                                                <input type="text" id="address" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">우편번호</label>
+                                                <input type="text" id="post_num" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" maxlength="10">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 추가 정보 섹션 -->
+                                        <div class="bg-green-50 rounded-lg p-6">
+                                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                                <i class="fas fa-leaf text-green-500 mr-2"></i>
+                                                식품 선호도 정보
+                                            </h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
+                                                    <div class="flex space-x-4">
+                                                        <label class="flex items-center">
+                                                            <input type="radio" name="gender" value="M" class="text-purple-500 focus:ring-purple-500">
+                                                            <span class="ml-2 text-sm text-gray-700">남성</span>
+                                                        </label>
+                                                        <label class="flex items-center">
+                                                            <input type="radio" name="gender" value="F" class="text-purple-500 focus:ring-purple-500">
+                                                            <span class="ml-2 text-sm text-gray-700">여성</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">가구 구성원 수</label>
+                                                    <input type="number" id="house_hold" min="1" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label class="flex items-center">
+                                                        <input type="checkbox" id="vegan" class="text-green-500 focus:ring-green-500 rounded">
+                                                        <span class="ml-2 text-sm text-gray-700">비건 (채식주의자)</span>
+                                                    </label>
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">알레르기 정보</label>
+                                                    <input type="text" id="allergy" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="예: 견과류, 해산물, 유제품">
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">싫어하는 음식</label>
+                                                    <input type="text" id="unfavorite" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="예: 양파, 당근, 피망">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 멤버십 섹션 -->
+                                        <div class="bg-yellow-50 rounded-lg p-6">
+                                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                                <i class="fas fa-crown text-yellow-500 mr-2"></i>
+                                                멤버십 정보
+                                            </h3>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">현재 멤버십 등급</label>
+                                                <input type="text" id="profileMembership" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed" placeholder="멤버십 정보를 불러오는 중...">
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    멤버십 변경은 고객센터를 통해 문의해주세요.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 버튼 섹션 -->
+                                        <div class="flex justify-end space-x-4 pt-6">
+                                            <button type="button" onclick="showContent('orders')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
+                                                <i class="fas fa-times mr-2"></i>취소
+                                            </button>
+                                            <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200">
+                                                <i class="fas fa-save mr-2"></i>저장
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- JavaScript -->
+    <script src="/static/js/tab-navigation.js"></script>
+    <script src="/static/js/mypage.js"></script>
+    <script src="/static/js/markdown.js"></script>
+    <script src="/static/js/orders_api.js"></script>
+    <script src="/static/js/cs_evidence.js"></script>
+    <script src="/static/js/cart.js"></script>
+    <script src="/static/js/tab-chat.js"></script>
+    
+    <!-- 로그아웃 기능 -->
+    <script>
+        async function logout() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch('/auth/logout', {
+                    method: 'POST',
+                    headers: headers,
+                    credentials: 'include'
+                });
+                if (response.ok) { 
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('user_info');
+                    window.location.href = '/'; 
+                }
+                else { console.error('로그아웃 실패:', response.status, response.statusText); }
+            } catch (error) { console.error('로그아웃 오류:', error); }
+        }
+    </script>
+</body>
+</html>

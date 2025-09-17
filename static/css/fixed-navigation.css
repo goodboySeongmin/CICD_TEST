@@ -1,0 +1,225 @@
+/* 고정 네비게이션 바 시스템 */
+
+/* 전체 레이아웃 설정 */
+.app-container {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 고정 네비게이션 바 */
+.fixed-nav-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    z-index: 1000;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.fixed-nav-content {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+}
+
+/* 왼쪽 로고 섹션 */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.5rem;
+    position: absolute;
+    left: 2rem;
+}
+
+.nav-logo img {
+    height: 32px;
+    width: auto;
+    margin-right: 0.75rem;
+}
+
+/* 중앙 네비게이션 버튼 */
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.nav-tab {
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+    border: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-tab:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-tab.active {
+    color: #10b981;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.nav-tab:hover::before {
+    left: 100%;
+}
+
+/* 우측 액션 버튼들 */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: absolute;
+    right: 2rem;
+}
+
+.nav-action-btn {
+    color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.nav-action-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 콘텐츠 영역 */
+.content-area {
+    flex: 1;
+    margin-top: 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 페이지 슬라이더 컨테이너 */
+.page-slider {
+    display: flex;
+    height: 100%;
+    width: 200%;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.page-slide {
+    width: 50%;
+    height: 100%;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* 페이지별 위치 설정 */
+.page-slider.show-chatbot {
+    transform: translateX(0%);
+}
+
+.page-slider.show-mypage {
+    transform: translateX(-50%);
+}
+
+/* 슬라이드 전환 효과 */
+.slide-transition {
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 페이지 콘텐츠 래퍼 */
+.page-content-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .fixed-nav-content {
+        padding: 0 1rem;
+    }
+    
+    .nav-logo {
+        font-size: 1.25rem;
+    }
+    
+    .nav-tab {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+    }
+    
+    .nav-tab i {
+        display: none;
+    }
+    
+    .nav-actions {
+        gap: 0.5rem;
+    }
+}
+
+
+/* 접근성 개선 */
+.nav-tab:focus,
+.nav-action-btn:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* 다크모드 대응 */
+@media (prefers-color-scheme: dark) {
+    .fixed-nav-bar {
+        background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+    }
+}
+
+/* 고성능 애니메이션을 위한 최적화 */
+.page-slider {
+    will-change: transform;
+}
+
+.nav-tab {
+    will-change: background-color, color;
+}

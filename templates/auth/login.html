@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 - Qook 신선마트</title>
+
+  <!-- 라이브러리 -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <!-- 커스텀 CSS -->
+  <link href="/static/css/typography.css" rel="stylesheet">
+  <link href="/static/css/login.css" rel="stylesheet">
+</head>
+<body class="auth-gradient min-h-screen flex items-center justify-center p-4">
+  <div class="max-w-md w-full">
+  <!-- 로고 섹션 -->
+  <div class="text-center mb-8">
+    <!-- 레이아웃 영향 없이 로고만 아래로: transform + translate-y -->
+    <a href="/" aria-label="랜딩 페이지로 이동">
+      <img
+        src="{{ url_for('static', path='/images/qook_logo_transparent_white.png') }}"
+        alt="Qook 로고"
+        class="mx-auto object-contain h-20 md:h-24 transform translate-y-3 md:translate-y-4 hover:opacity-90 transition"
+        loading="lazy"
+      />
+    </a>
+    <h1 class="text-3xl font-bold text-white mb-2">Qook 신선마트</h1>
+    <p class="text-green-100">신선한 식재료를 위한 스마트한 선택</p>
+  </div>
+
+    <!-- 로그인 카드 -->
+    <div class="auth-card bg-white bg-opacity-95 rounded-2xl p-8">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">로그인</h2>
+        <p class="text-gray-600 mt-2">계정에 로그인하여 신선한 쇼핑을 시작하세요</p>
+      </div>
+
+      <!-- 로그인 폼 -->
+      <form id="loginForm" class="space-y-6">
+        <!-- 이메일 입력 -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-envelope mr-2"></i>이메일
+          </label>
+          <input
+            type="email"
+            id="email"
+            required
+            class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200"
+            placeholder="example@email.com">
+        </div>
+
+        <!-- 비밀번호 입력 -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-lock mr-2"></i>비밀번호
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="password"
+              required
+              class="input-focus w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition duration-200 pr-12"
+              placeholder="비밀번호를 입력하세요">
+            <button
+              type="button"
+              id="togglePassword"
+              class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 로그인 옵션 -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center">
+            <input type="checkbox" id="rememberMe" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+            <span class="ml-2 text-sm text-gray-600">로그인 상태 유지</span>
+          </label>
+          <a href="#" class="text-sm text-green-600 hover:text-green-500 transition">비밀번호 찾기</a>
+        </div>
+
+        <!-- 로그인 버튼 -->
+        <button
+          type="submit"
+          id="loginButton"
+          class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-200 font-medium flex items-center justify-center">
+          <span id="loginButtonText">로그인</span>
+          <div id="loginSpinner" class="hidden ml-2">
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+          </div>
+        </button>
+
+        <!-- 오류 메시지 -->
+        <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          <span id="errorText"></span>
+        </div>
+
+        <!-- 성공 메시지 -->
+        <div id="successMessage" class="hidden bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm">
+          <i class="fas fa-check-circle mr-2"></i>
+          <span id="successText"></span>
+        </div>
+      </form>
+
+      <!-- 소셜 로그인 (추후 확장) -->
+      <div class="mt-8">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">또는</span>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-3">
+          <button class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition">
+            <i class="fab fa-google text-red-500 mr-2"></i>
+            Google
+          </button>
+          <button class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition">
+            <i class="fab fa-facebook text-blue-500 mr-2"></i>
+            Facebook
+          </button>
+        </div>
+      </div>
+
+      <!-- 회원가입 링크 -->
+      <div class="mt-8 text-center">
+        <p class="text-gray-600">
+          아직 계정이 없으신가요?
+          <a href="/register" class="text-green-600 hover:text-green-500 font-medium transition">회원가입</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- 푸터 -->
+    <div class="text-center mt-8 text-green-100">
+      <p class="text-sm">© 2024 Qook 신선마트. All rights reserved.</p>
+    </div>
+  </div>
+
+  <!-- 분리된 JS -->
+  <script src="/static/js/login.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+/* Login page custom styles (Tailwind 이후에 로드하세요) */
+
+/* 배경 그라데이션 */
+.auth-gradient {
+  background: linear-gradient(135deg, #2dd4bf 0%, #10b981 100%);
+}
+
+/* 카드 유리효과 & 그림자 */
+.auth-card {
+  backdrop-filter: blur(10px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* 포커스 테두리 보강 */
+.input-focus:focus {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+}
