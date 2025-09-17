@@ -58,7 +58,7 @@ jobs:
           {
             "AWSEBDockerrunVersion": "1",
             "Image": {
-              "Name": "${{ secrets.DOCKER_IMAGENAME }}",
+              "Name": "${DOCKER_IMAGENAME}",
               "Update": "true"
             },
             "Ports": [
