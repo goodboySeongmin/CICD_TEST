@@ -1,0 +1,62 @@
+name: FastAPI CICD App
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  build-deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
+
+      - name: Generate Dockerrun.aws.json
+        run: |
+          cat > Dockerrun.aws.json << 'EOF'
+          {
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "${DOCKER_IMAGE}",
+              "Update": "true"
+            },
+            "Ports": [
+              { "ContainerPort": "8000" }
+            ],
+            "Command": ["uvicorn","app.main:app","--host","0.0.0.0","--port","8000","--workers","2"],
+            "Environment": [
+              { "Name": "PORT", "Value": "8000" }
+            ]
+          }
+          EOF
+        env:
+          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+
+      - name: Beanstalk Deploy
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ secrets.AWS_EB_APPLICATION_NAME }}
+          environment_name: ${{ secrets.AWS_EB_ENVIRONMENT_NAME }}
+          region: ap-northeast-2
+          version_label: "app-${{ github.sha }}"
+          deployment_package: Dockerrun.aws.json
