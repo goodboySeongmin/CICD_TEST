@@ -34,6 +34,18 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:latest
 
+      - name: Verify image tag exists on Docker Hub
+        run: |
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+          echo "Checking $IMAGE"
+          docker buildx imagetools inspect "$IMAGE" >/dev/null
+          echo "✅ Image tag exists: $IMAGE"
+      
+      - name: Inspect manifest (should list amd64 and/or arm64)
+        run: |
+          docker buildx imagetools inspect ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGENAME }}:${{ github.sha }}
+
+
       - name: Generate Dockerrun.aws.json
         run: |
           cat > Dockerrun.aws.json << 'EOF'
